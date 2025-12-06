@@ -1160,21 +1160,18 @@ LAMP Stack is a group of open-source software that is typically installed togeth
 
 ## Steps
 
+```
 ### Configure App Server
 
 1. Install `httpd`, `php` and `php-mysqli`:
 
-    ```sh
     sudo yum install -y httpd php php-mysqli
-    ```
 
 2. Change Apache port and Restart service
 
-    ```sh
     sudo cp /etc/httpd/conf/httpd.conf /etc/httpd/conf/httpd.conf.bak
     sudo sed -i 's/\<80\>/3003/g' /etc/httpd/conf/httpd.conf
     sudo systemctl enable --now httpd
-    ```
 
     > Always make sure you kept a backup of your file before modifying it.
 
@@ -1184,20 +1181,16 @@ LAMP Stack is a group of open-source software that is typically installed togeth
 
 1. Install mariadb-server on Database server
 
-    ```sh
     sudo yum install -y mariadb-server
     sudo systemctl enable --now mariadb
     sudo systemctl status mariadb | grep "running"
-    ```
 
 2. Create User and Database
 
-    ```sh
     mysql -u root -e "CREATE DATABASE kodekloud_db2;"
     mysql -u root -e "CREATE USER 'kodekloud_cap'@'%' IDENTIFIED BY 'your-pass';"
     mysql -u root -e "GRANT ALL ON kodekloud_db2.* TO 'kodekloud_cap'@'%';"
     mysql -u root -e "FLUSH PRIVILEGES;"
-    ```
 
     > `'%'` This allows remote connection otherwise  user will be failed to connect DB.
 
@@ -1222,7 +1215,7 @@ Click on `App` button to see the result. It should print the DB user.
 export PATH=${PATH}:/usr/local/mysql/bin
 # Permanantly
 echo 'export PATH="/usr/local/mysql/bin:$PATH"' >> ~/.bash_profile
-
+```
 ============================================================================================================================
 # Install and Configure Web Application
 
@@ -1234,50 +1227,37 @@ xFusionCorp Industries is planning to host two static websites on their infra in
 - Once configured you should be able to access the website using curl command on the respective app server, i.e `curl http://localhost:6400/official/` and `curl http://localhost:6400/games/`
 
 ## Steps
-
+```
 1. Login into App Server 3 and Install httpd
-
-    ```sh
+   
     sudo yum install -y httpd
-    ```
-
+  
 2. Change Apache port:
 
-    ```sh
     sudo cp /etc/httpd/conf/httpd.conf /etc/httpd/conf/httpd.conf.bak
     sudo sed -i 's/80/6400/g' /etc/httpd/conf/httpd.conf
-    ```
 
 3. Restart Apache Server
 
-    ```sh
     sudo systemctl restart httpd
-    ```
 
 4. Copy backup from Jump Host to App Server
 
-    ```sh
     scp -r /home/thor/official banner@stapp03:/home/banner
     scp -r /home/thor/games banner@stapp03:/home/banner/
-    ```
 
 5. Place websites
 
-    ```sh
     sudo cp -r /home/banner/official /var/www/html/
     sudo cp -r /home/banner/games /var/www/html
-    ```
 
 6. Restart `httpd`
 
 7. Verify result
 
-    ```sh
     curl http://localhost:6400/games/
     curl http://localhost:6400/official/
-    ```
 
-    ```html
     <!DOCTYPE html>
     <html>
     <body>
@@ -1288,7 +1268,7 @@ xFusionCorp Industries is planning to host two static websites on their infra in
 
     </body>
     </html>
-    ```
+```
 
 ============================================================================================================================
 # Configure Nginx + PHP-FPM Using Unix Sock
@@ -1301,49 +1281,39 @@ The Nautilus application development team is planning to launch a new PHP-based 
 - Once configured correctly, you can test the website using `curl http://stapp01:8093/index.php` command from jump host.
 
 ## Steps
-
+```
 1. Login into App Server and run the following commands:
-
-    ```sh
+    
     sudo dnf update -y
     sudo dnf install nginx -y
     sudo dnf module install php:8.2 -y # change version here if requires
-    ```
 
     - It will update packge repo
     - Install nginx and php with expected version
 
 2. Configure php-fpm config:
 
-    ```sh
     sudo mkdir -p /var/run/php-fpm
     sudo vi /etc/php-fpm.d/www.conf
-    ```
 
     - `listen = /run/php-fpm/www.sock` update this line with expected directory. It should be `listen = /var/run/php-fpm/default.sock`
 
 3. Configure nginx
 
-    ```sh
     sudo vi /etc/nginx/nginx.conf
-    ```
 
     - change port 80 to `8093`
 
 4. Configure php with nginx
 
-    ```sh
     sudo vi /etc/nginx/default.d/php.conf
-    ```
 
     - Update `fastcgi_pass php-fpm;` to this: `fastcgi_pass unix:/var/run/php-fpm/default.sock;`
 
 5. Restart php-fpm and nginx
 
-    ```sh
     sudo systemctl enable --now nginx
     sudo systemctl enable --now php-fpm
-    ```
 
 6. Test: `curl http://stapp01:8093/index.php`
-
+```
